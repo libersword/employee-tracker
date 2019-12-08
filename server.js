@@ -1,11 +1,12 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
+var table = require("console.table");
 
 var connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "",
+  password: "Cance164",
   database: "employeeTracker_db"
 });
 
@@ -100,48 +101,190 @@ function runPrompt() {
 
 //View all functions
 viewAllEmployees = () => {
-
+  let query = "select e.id, e.first_name, e.last_name, r.title, r.salary, d.name from employees e INNER JOIN roles r on e.role_id = r.id inner join departments d on r.department_id = d.id";
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    if (res.length == 0) {
+      console.log(
+        "No employees found. Please start adding employees by following the prompts."
+      );
+      runPrompt();
+    }
+    console.log("Employees found: " + res.length);
+    console.table("All Employees: ", res);
+  });
 };
 viewAllRoles = () => {
-
+  let query = "select * from roles";
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    if (res.length == 0) {
+      console.log(
+        "No roles found. Please start adding roles by following the prompts."
+      );
+      runPrompt();
+    }
+    console.log("Roles found: " + res.length);
+    console.table("All Roles: ", res);
+  });
 };
 viewAllDepartments = () => {
-
+  let query = "select * from departments";
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+    if (res.length == 0) {
+      console.log(
+        "No departments found. Please start adding departments by following the prompts."
+      );
+      runPrompt();
+    }
+    console.log("Roles found: " + res.length);
+    console.table("All Roles: ", res);
+  });
 };
-viewBudget = () => {
-
-};
-viewByDepartment = () => {
-
-};
+viewBudget = () => {};
+viewByDepartment = () => {};
 //Add Functions
 addEmployee = () => {
-
-};
+  let queryString = 'SELECT r.id AS roleId, r.title FROM roles r';
+  connection.query(queryString, function(err, res){
+    if(err) throw err;
+    inquirer.prompt([
+    {
+    name: 'first_name',
+    type: 'input',
+    message: 'Employee first name'
+  },{
+    name: 'last_name',
+    type: 'input',
+    message: 'Employee last name: '
+  }, {
+    name: 'role',
+    type:'rawlist',
+    choices: function() {
+      let roles = [];
+      for (let i = 0; i < res.length; i++){
+        roles.push(res[i].title)
+      }
+      return roles;
+    },
+    message: "Choose role: "
+  }
+    ]).then(function(answers){
+      let rId;
+      for (let j = 0; j < res.length; j++) {
+        if (res[j].title === answers.role) {
+          rId = res[j].roleId;
+          console.log(res[j].roleId);
+        }
+      }
+  
+      connection.query('insert into employees set ?',
+      {
+        first_name: answers.first_name,
+        last_name: answers.last_name,
+        role_id: rId
+      },
+      function(err, res){
+        if (err) throw err;
+        console.log(res.affectedRows + " employee added!\n");
+      }
+      )
+    })
+  })
+}
 addRole = () => {
-
+  let queryString = 'SELECT d.name, d.id AS deptId FROM departments d';
+  connection.query(queryString, function(err, res){
+    if(err) throw err;
+    inquirer.prompt([
+    {
+    name: 'role_name',
+    type: 'input',
+    message: 'Role name: '
+  },{
+    name: 'salary',
+    type: 'input',
+    message: 'Salary: '
+  }, {
+    name: 'department',
+    type:'rawlist',
+    choices: function() {
+      let departments = [];
+      for (let i = 0; i < res.length; i++){
+        departments.push(res[i].name)
+      }
+      return departments;
+    },
+    message: "Choose department: "
+  }
+    ]).then(function(answers){
+      let dId;
+      for (let j = 0; j < res.length; j++) {
+        if (res[j].name === answers.department) {
+          dId = res[j].deptId;
+        }
+      }
+  
+      connection.query('insert into roles set ?',
+      {
+        title: answers.role_name,
+        salary: answers.salary,
+        department_id: dId
+      },
+      function(err, res){
+        if (err) throw err;
+        console.log(res.affectedRows + " role added!\n");
+      }
+      )
+    })
+  })
 };
 addDepartment = () => {
-
+  let queryString = 'SELECT d.name, d.id AS deptId FROM departments d';
+  connection.query(queryString, function(err, res){
+    if(err) throw err;
+    inquirer.prompt(
+      {
+    name: 'department_name',
+    type: 'input',
+    message: 'Department name: '
+  }).then(function(answers){
+      connection.query('insert into departments set ?',
+      {
+        name: answers.department_name
+      },
+      function(err, res){
+        if (err) throw err;
+        console.log(res.affectedRows + " department added!\n");
+      }
+      )
+    })
+  })
 };
 //Update Functions
 updateEmployee = () => {
-
-};
-updateRole = () => {
-
-};
-updateDepartment = () => {
-
-};
+  let queryString = 'SELECT e.name, r.id AS roleId, r.title FROM roles r INNER JOIN employees e ON e.role_id = r.id';
+  connection.query(queryString, function(err, res){
+    if(err) throw err;
+    inquirer.prompt(
+      {
+    name: 'emp_name',
+    type: 'rawlist',
+    choices: function() {
+      let employees = [];
+      for (let i = 0; i < res.length; i++){
+        employees.push(res[i].first_name + res[i].last_name)
+      }
+      return employees;
+    },
+    message: "Choose employee to update: "
+  }).then(function(answers){
+    
+});
+updateRole = () => {};
+updateDepartment = () => {};
 //Delete
-deleteEmployee = () => {
-
-};
-deleteRoles = () => {
-
-};
-deleteDepartment = () => {
-
-};
-
+deleteEmployee = () => {};
+deleteRoles = () => {};
+deleteDepartment = () => {};
