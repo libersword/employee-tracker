@@ -347,5 +347,9 @@ deleteEmployee = () => {
     })
   })
 };
-// deleteRoles = () => {};
-// deleteDepartment = () => {};
+// deleteRoles = () => {
+
+// };
+// deleteDepartment = () => {
+
+// };
