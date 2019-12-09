@@ -150,7 +150,7 @@ addEmployee = () => {
   connection.query(queryString, function(err, res){
     if(err) throw err;
     inquirer.prompt([
-    {
+  {
     name: 'first_name',
     type: 'input',
     message: 'Employee first name'
@@ -198,7 +198,7 @@ addRole = () => {
   connection.query(queryString, function(err, res){
     if(err) throw err;
     inquirer.prompt([
-    {
+  {
     name: 'role_name',
     type: 'input',
     message: 'Role name: '
@@ -264,27 +264,88 @@ addDepartment = () => {
 };
 //Update Functions
 updateEmployee = () => {
-  let queryString = 'SELECT e.name, r.id AS roleId, r.title FROM roles r INNER JOIN employees e ON e.role_id = r.id';
+  let queryString = 'SELECT e.first_name, e.last_name, role_id AS roleID FROM employees e INNER JOIN roles r ON e.role_id = r.id';
   connection.query(queryString, function(err, res){
     if(err) throw err;
-    inquirer.prompt(
-      {
+    inquirer.prompt([
+    {
     name: 'emp_name',
     type: 'rawlist',
     choices: function() {
+      console.log(res);
       let employees = [];
       for (let i = 0; i < res.length; i++){
-        employees.push(res[i].first_name + res[i].last_name)
+        employees.push(res[i].first_name + ' ' + res[i].last_name)
       }
       return employees;
     },
     message: "Choose employee to update: "
+  },
+  {
+    name: 'updated_first',
+    type: 'input',
+    message: 'Update first name'
+  },
+  {
+    name: 'updated_last',
+    type: 'input',
+    message: 'Update last name: ' 
+  }]).then(function(answers){
+    let query = "UPDATE employees SET ? WHERE ?";
+    connection.query(query, {
+      first_name: answers.updated_first,
+      last_name: answers.updated_last,
+    },{
+      first_name: answers.emp_name
+    },
+    function(err, res){
+      if (err) throw err;
+      console.log(res.affectedRows + " Employee Updated!\n");
+    }
+    )
+  })
+})
+};   
+
+// updateRole = () => {};
+// updateDepartment = () => {};
+// //Delete
+deleteEmployee = () => {
+  let queryString = 'SELECT e.first_name, e.last_name, e.id AS empID FROM employees e';
+  connection.query(queryString, function(err, res){
+    if(err) throw err;
+    inquirer.prompt(
+    {
+    name: 'remove_emp',
+    type: 'rawlist',
+    choices: function() {
+      console.log(res);
+      let employees = [];
+      for (let i = 0; i < res.length; i++){
+        employees.push(res[i].first_name)
+      }
+      return employees;
+    },
+    message: 'Which Employee would you like to remove: '
   }).then(function(answers){
-    
-});
-updateRole = () => {};
-updateDepartment = () => {};
-//Delete
-deleteEmployee = () => {};
-deleteRoles = () => {};
-deleteDepartment = () => {};
+    let eId;
+    console.log(eId);
+      for (let j = 0; j < res.length; j++) {
+        if (res[j].first_name === answers.remove_emp) {
+          eId = res[j].empID;
+        }
+      }
+      connection.query('DELETE FROM employees WHERE ?',
+      {
+        id: eId
+      },
+      function(err, res){
+        if (err) throw err;
+        console.log(res.affectedRows + " employee removed!\n");
+      }
+      )
+    })
+  })
+};
+// deleteRoles = () => {};
+// deleteDepartment = () => {};
