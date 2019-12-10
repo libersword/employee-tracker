@@ -6,7 +6,7 @@ var connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
   user: "root",
-  password: "Cance164",
+  password: "",
   database: "employeeTracker_db"
 });
 
@@ -29,13 +29,13 @@ function runPrompt() {
         "Add Role",
         "Add Department",
         "Update Employee",
-        "Update Roles",
-        "Update Department",
-        "View Employees By Department",
-        "View total budget by department",
+        // "Update Roles",
+        // "Update Department",
+        // "View Employees By Department",
+        // "View total budget by department",
         "Delete Employee",
-        "Delete Department",
-        "Delete Roles"
+        // "Delete Department",
+        // "Delete Roles"
       ]
     })
     .then(function(answer) {
